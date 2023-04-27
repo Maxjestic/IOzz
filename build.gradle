@@ -17,8 +17,16 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	// https://mvnrepository.com/artifact/io.vavr/vavr
+	implementation group: 'io.vavr', name: 'vavr', version: '1.0.0-alpha-4'
+	testImplementation 'junit:junit:4.13.1'
+
 }
 
 tasks.named('test') {
+	useJUnitPlatform()
+}
+
+test {
 	useJUnitPlatform()
 }
