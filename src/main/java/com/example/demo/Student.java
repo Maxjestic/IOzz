@@ -1,10 +1,10 @@
 package com.example.demo;
 
 public class Student {
-    final long id;
-    final String name;
-    final String number;
-    final String section;
+    final public long id;
+    final public String name;
+    final public String number;
+    final public String section;
 
     public Student(long id, String name, String number, String section) {
         this.id = id;
