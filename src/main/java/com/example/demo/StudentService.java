@@ -1,17 +1,42 @@
 package com.example.demo;
 
+import com.example.demo.db.StudentRepository;
+import com.example.demo.db.StudentRow;
 import io.vavr.collection.List;
+import org.springframework.stereotype.Service;
 
+import java.util.function.Function;
+
+@Service
 public class StudentService {
-    public List<Student> students=List.empty();
-    public List<Student> getStudents()
-    {
-        return students;
+    private final StudentRepository repository;
+
+    public StudentService(StudentRepository repository) {
+        this.repository = repository;
     }
 
-    public Student addStudent(NewStudent newStudent){
-        Student created = new Student(students.size()+1, newStudent.name, newStudent.number, newStudent.section);
-        students = students.prepend(created);
-        return created;
+    public List<Student> getStudents()
+    {
+        return List.ofAll(this.repository.findAll())
+                .map(getStudentRowStudentFunction());
+    }
+
+    private static Function<StudentRow, Student> getStudentRowStudentFunction() {
+        return dbObj ->
+                new Student(
+                        dbObj.getId(),
+                        dbObj.getName(),
+                        dbObj.getNumber(),
+                        dbObj.getSection()
+                );
+    }
+
+    public Student addStudent(final NewStudent newStudent){
+        StudentRow created = this.repository.save(new StudentRow(
+                newStudent.name,
+                newStudent.number,
+                newStudent.section
+        ));
+        return getStudentRowStudentFunction().apply(created);
     }
 }
