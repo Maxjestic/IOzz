@@ -4,7 +4,9 @@ import com.example.demo.db.StudentRepository;
 import com.example.demo.db.StudentRow;
 import io.vavr.collection.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -37,5 +39,14 @@ public class StudentService {
                 newStudent.number,
                 newStudent.section
         )).toStudent();
+    }
+
+    @Transactional
+    public Optional<Student> changeNumber (long studentId, String newNumber) {
+        final Optional<StudentRow> student = this.repository.findById(studentId);
+        return student.map(c -> {
+            c.setNumber(newNumber);
+            return c.toStudent();
+        });
     }
 }
