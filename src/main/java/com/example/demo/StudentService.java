@@ -1,40 +1,32 @@
 package com.example.demo;
 
+import com.example.demo.db.IScoreRepository;
+import com.example.demo.db.ScoreRow;
 import com.example.demo.db.StudentRepository;
 import com.example.demo.db.StudentRow;
 import io.vavr.collection.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.util.Optional;
-import java.util.function.Function;
 
 @Service
 public class StudentService {
-    private final StudentRepository repository;
+    private final StudentRepository studentRepository;
+    private final IScoreRepository scoreRepository;
 
-    public StudentService(StudentRepository repository) {
-        this.repository = repository;
+    public StudentService(StudentRepository studentRepository, IScoreRepository scoreRepository) {
+        this.studentRepository = studentRepository;
+        this.scoreRepository = scoreRepository;
     }
-
-    public List<Student> getStudents()
-    {
-        return List.ofAll(this.repository.findAll())
+    List<Student> getStudents() {
+        return List.ofAll(this.studentRepository.findAll())
                 .map(StudentRow::toStudent);
     }
 
-    private static Function<StudentRow, Student> getStudentRowStudentFunction() {
-        return dbObj ->
-                new Student(
-                        dbObj.getId(),
-                        dbObj.getName(),
-                        dbObj.getNumber(),
-                        dbObj.getSection()
-                );
-    }
-
-    public Student addStudent(final NewStudent newStudent){
-        return this.repository.save(new StudentRow(
+    Student addStudent(final NewStudent newStudent) {
+        return this.studentRepository.save(new StudentRow(
                 newStudent.name,
                 newStudent.number,
                 newStudent.section
@@ -43,10 +35,22 @@ public class StudentService {
 
     @Transactional
     public Optional<Student> changeNumber (long studentId, String newNumber) {
-        final Optional<StudentRow> student = this.repository.findById(studentId);
+        final Optional<StudentRow> student = this.studentRepository.findById(studentId);
         return student.map(c -> {
             c.setNumber(newNumber);
             return c.toStudent();
+        });
+    }
+
+    @Transactional
+    public Optional<Integer> addScore(final long studentId, final Score score) {
+        final Optional<StudentRow> student = this.studentRepository.findById(studentId);
+        return student.map(c-> {
+            int existingScore = List.ofAll(c.getScores())
+                    .foldLeft(0, (p, s) -> p + s.getScore());
+            final ScoreRow newScore = new ScoreRow(score.score, score.comment, c);
+            this.scoreRepository.save(newScore);
+            return existingScore + score.score;
         });
     }
 }
