@@ -18,7 +18,7 @@ public class StudentService {
     public List<Student> getStudents()
     {
         return List.ofAll(this.repository.findAll())
-                .map(getStudentRowStudentFunction());
+                .map(StudentRow::toStudent);
     }
 
     private static Function<StudentRow, Student> getStudentRowStudentFunction() {
@@ -32,11 +32,10 @@ public class StudentService {
     }
 
     public Student addStudent(final NewStudent newStudent){
-        StudentRow created = this.repository.save(new StudentRow(
+        return this.repository.save(new StudentRow(
                 newStudent.name,
                 newStudent.number,
                 newStudent.section
-        ));
-        return getStudentRowStudentFunction().apply(created);
+        )).toStudent();
     }
 }
